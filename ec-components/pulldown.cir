@@ -1,0 +1,29 @@
+Pulldown teaching model: key pulse and imposed leakage
+* Assumptions, not measured keyboard or IC parameters.
+* Ckey=2pF, Cref=220pF; amplifier input and ADC are not modelled.
+VROW row 0 PWL(0 0 10u 0 10.01u 3.3 1.02m 3.3)
+VRESET reset 0 PWL(0 3.3 9.9u 3.3 9.91u 0)
+.model RESET SW(Ron=5 Roff=1e15 Vt=1.65 Vh=0)
+CKEY_none row hold_none 2p
+CREF_none hold_none 0 220p
+SRESET_none hold_none 0 reset 0 RESET
+CKEY_pd row hold_pd 2p
+CREF_pd hold_pd 0 220p
+SRESET_pd hold_pd 0 reset 0 RESET
+RPD hold_pd 0 100k
+* Separate idle-node experiment: imposed 1nA enters each 222pF node.
+ILEAK_none 0 leak_none PWL(0 0 10u 0 10.01u 1n 1.02m 1n)
+CLEAK_none leak_none 0 222p
+RNUM_none leak_none 0 1e15
+ILEAK_pd 0 leak_pd PWL(0 0 10u 0 10.01u 1n 1.02m 1n)
+CLEAK_pd leak_pd 0 222p
+RLEAK_pd leak_pd 0 100k
+.ic V(hold_none)=0 V(hold_pd)=0 V(leak_none)=0 V(leak_pd)=0
+.tran 0 1.02m 0 50n uic
+.save V(hold_none) V(hold_pd) V(leak_none) V(leak_pd)
+.meas tran hold_none_10us FIND V(hold_none) AT=20.01u
+.meas tran hold_pd_10us FIND V(hold_pd) AT=20.01u
+.meas tran leak_none_1ms FIND V(leak_none) AT=1.01m
+.meas tran leak_pd_1ms FIND V(leak_pd) AT=1.01m
+.options plotwinsize=0 reltol=1e-6 abstol=1e-15 vntol=1e-9
+.end

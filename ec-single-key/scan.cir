@@ -1,0 +1,47 @@
+One-key EC scan: released 1pF versus pressed 2pF
+* Teaching model, not a vendor IC macro-model or a measured keyboard.
+* Both cells receive identical input/reset pulses; only Ckey differs.
+.lib UniversalOpAmp2.lib
+.param Vin=3.3 Cref=220p Rpd=100k Rf=47k Rg=1k
+VDD vdd 0 {Vin}
+VROW row 0 PULSE(0 {Vin} 5u 10n 10n 15u 40u)
+* HIGH closes the discharge switch. Release before each charge edge.
+VRESET reset 0 PULSE({Vin} 0 4u 10n 10n 12u 40u)
+.model RESET SW(Ron=5 Roff=1e15 Vt=1.65 Vh=0)
+
+.subckt KEY_CELL row reset vdd sense out params: Ckey=1p
+CKEY row sense {Ckey}
+CREF sense 0 {Cref}
+RPD sense 0 {Rpd}
+SRESET sense 0 reset 0 RESET
+RF out feedback {Rf}
+RG feedback 0 {Rg}
+* Generic one-pole, slew/rail-limited amplifier. Input capacitance omitted.
+* Rin is deliberately large to omit input loading/bias in this experiment.
+XAMP sense feedback vdd 0 out level2 Avol=1Meg GBW=10Meg Slew=6.5Meg Rin=1e15 Rail=0 Vos=0
+.ends KEY_CELL
+
+XRELEASED row reset vdd sense_1pf out_1pf KEY_CELL Ckey=1p
+XPRESSED row reset vdd sense_2pf out_2pf KEY_CELL Ckey=2p
+.tran 0 80u 0 10n
+.save V(row) V(reset) V(sense_1pf) V(sense_2pf) V(out_1pf) V(out_2pf)
+.meas tran sense_1pf_edge FIND V(sense_1pf) AT=5.01u
+.meas tran sense_2pf_edge FIND V(sense_2pf) AT=5.01u
+.meas tran sense_1pf_read FIND V(sense_1pf) AT=10u
+.meas tran sense_2pf_read FIND V(sense_2pf) AT=10u
+.meas tran out_1pf_read FIND V(out_1pf) AT=10u
+.meas tran out_2pf_read FIND V(out_2pf) AT=10u
+.meas tran out_1pf_early FIND V(out_1pf) AT=6u
+.meas tran out_2pf_early FIND V(out_2pf) AT=6u
+.meas tran out_1pf_late FIND V(out_1pf) AT=15u
+.meas tran out_2pf_late FIND V(out_2pf) AT=15u
+.meas tran out_1pf_repeat FIND V(out_1pf) AT=50u
+.meas tran out_2pf_repeat FIND V(out_2pf) AT=50u
+.meas tran sense_1pf_reset FIND V(sense_1pf) AT=18u
+.meas tran sense_2pf_reset FIND V(sense_2pf) AT=18u
+.meas tran out_1pf_reset FIND V(out_1pf) AT=39u
+.meas tran out_2pf_reset FIND V(out_2pf) AT=39u
+.meas tran out_1pf_peak MAX V(out_1pf) FROM=5u TO=16u
+.meas tran out_2pf_peak MAX V(out_2pf) FROM=5u TO=16u
+.options plotwinsize=0 reltol=1e-6 abstol=1e-15 vntol=1e-9
+.end

@@ -1,0 +1,23 @@
+Discharge current limiting: no extra resistor versus 200ohm
+* Ctotal=220pF+2pF, initial sense voltage=30mV.
+* Assumed switch ON resistance=5ohm. No transistor or IC macro model.
+VRESET reset 0 PWL(0 0 20n 0 20.2n 3.3 400n 3.3)
+.model RESET SW(Ron=5 Roff=1e15 Vt=1.65 Vh=0)
+CHOLD_none hold_none 0 222p
+RPD_none hold_none 0 100k
+VPROBE_none hold_none sw_none 0
+SRESET_none sw_none 0 reset 0 RESET
+CHOLD_rd hold_rd 0 222p
+RPD_rd hold_rd 0 100k
+RDIS hold_rd probe_rd 200
+VPROBE_rd probe_rd sw_rd 0
+SRESET_rd sw_rd 0 reset 0 RESET
+.ic V(hold_none)=30m V(hold_rd)=30m
+.tran 0 400n 0 50p uic
+.save V(hold_none) V(hold_rd) I(VPROBE_none) I(VPROBE_rd)
+.meas tran peak_none MAX I(VPROBE_none) FROM=20n TO=25n
+.meas tran peak_rd MAX I(VPROBE_rd) FROM=20n TO=25n
+.meas tran residual_none_50ns FIND V(hold_none) AT=70.1n
+.meas tran residual_rd_50ns FIND V(hold_rd) AT=70.1n
+.options plotwinsize=0 reltol=1e-6 abstol=1e-15 vntol=1e-9
+.end

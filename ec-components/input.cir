@@ -1,0 +1,29 @@
+Input current limiting: simplified protection circuit under overdrive
+* Dedicated 5V test pulse, NOT the normal capacitive key signal.
+* Assumed 3.3V rail, 50ohm source, 5pF input, idealized diode clamps.
+* Clamp threshold=0.5V above rail; forward resistance=1ohm.
+* No real op-amp model; this does not establish input safety limits.
+VCC rail 0 3.3
+VFAULT fault 0 PULSE(0 5 1u 10n 10n 1u 5u)
+.model CLAMP D(Ron=1 Roff=1e12 Vfwd=0.5)
+RSOURCE_none fault probe_none 50
+VPROBE_none probe_none pin_none 0
+CINPUT_none pin_none 0 5p
+DHI_none pin_none rail CLAMP
+DLO_none 0 pin_none CLAMP
+RSOURCE_ri fault series_ri 50
+RINPUT series_ri probe_ri 1k
+VPROBE_ri probe_ri pin_ri 0
+CINPUT_ri pin_ri 0 5p
+DHI_ri pin_ri rail CLAMP
+DLO_ri 0 pin_ri CLAMP
+.tran 0 4u 0 1n
+.save V(pin_none) V(pin_ri) I(VPROBE_none) I(VPROBE_ri)
+.meas tran current_none MAX I(VPROBE_none) FROM=1u TO=2u
+.meas tran current_ri MAX I(VPROBE_ri) FROM=1u TO=2u
+.meas tran plateau_none FIND I(VPROBE_none) AT=1.5u
+.meas tran plateau_ri FIND I(VPROBE_ri) AT=1.5u
+.meas tran voltage_none FIND V(pin_none) AT=1.5u
+.meas tran voltage_ri FIND V(pin_ri) AT=1.5u
+.options plotwinsize=0 reltol=1e-6 abstol=1e-15 vntol=1e-9
+.end

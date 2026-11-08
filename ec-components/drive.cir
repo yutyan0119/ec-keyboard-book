@@ -1,0 +1,19 @@
+Drive resistor damping: an explicitly assumed lumped RLC interconnect
+* Rgpio=20ohm, Ltrace=100nH, Cload=100pF, rise time=2ns.
+* No actual PCB extraction, GPIO clamp, or key-capacitance estimate.
+VEDGE edge 0 PWL(0 0 10n 0 12n 3.3 200n 3.3)
+RGPIO_none edge l_none 20
+LTRACE_none l_none end_none 100n
+CLOAD_none end_none 0 100p
+RGPIO_rd edge series_rd 20
+RDRIVE series_rd l_rd 47
+LTRACE_rd l_rd end_rd 100n
+CLOAD_rd end_rd 0 100p
+.tran 0 200n 0 50p
+.save V(end_none) V(end_rd)
+.meas tran peak_none MAX V(end_none) FROM=10n TO=150n
+.meas tran peak_rd MAX V(end_rd) FROM=10n TO=150n
+.meas tran final_none FIND V(end_none) AT=190n
+.meas tran final_rd FIND V(end_rd) AT=190n
+.options plotwinsize=0 reltol=1e-6 abstol=1e-15 vntol=1e-9
+.end
